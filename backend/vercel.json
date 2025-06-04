@@ -8,5 +8,8 @@
       "src": "/(.*)",
       "dest": "api/index.js"
     }
-  ]
+  ],
+  "build": {
+    "includeFiles": ["node_modules/.prisma/client/**/*"]
+  }
 }
