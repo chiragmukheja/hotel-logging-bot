@@ -8,9 +8,9 @@ datasource db {
 }
 
 model Request {
-  id           String   @id @default(cuid())
-  guestPhone   String
-  requestText  String
-  createdAt    DateTime @default(now())
-  status       String   @default("pending")
+  id          Int      @id @default(autoincrement())
+  guestPhone  String
+  requestText String
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
 }
