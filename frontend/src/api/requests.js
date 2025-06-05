@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:4000/requests';
+const BASE_URL = 'https://hotel-logging-bot.onrender.com/requests';
 
 export const getAllPendingRequests = async () => {
   const res = await axios.get(BASE_URL);
