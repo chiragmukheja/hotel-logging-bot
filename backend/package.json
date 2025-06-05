@@ -6,7 +6,8 @@
   "main": "api/index.js",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "build": "npx prisma generate"
+    "build": "npm run build",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.8.2",
