@@ -10,7 +10,7 @@ function Register({ onRegister }) {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${import.meta.env.API_BASE}/auth/register`, {
+      await axios.post("https://hotel-logging-bot.onrender.com/auth/register", {
         username,
         password,
       });

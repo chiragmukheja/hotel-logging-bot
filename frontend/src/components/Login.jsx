@@ -10,7 +10,7 @@ function Login({ onLogin }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${import.meta.env.API_BASE}/auth/login`, {
+      const res = await axios.post("https://hotel-logging-bot.onrender.com/auth/login", {
         username,
         password,
       });
