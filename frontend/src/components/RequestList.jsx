@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { getAllPendingRequests, markRequestAsDone } from '../api/requests';
-import { Loader2 } from 'lucide-react'; // Optional: needs `lucide-react`
+import { getToken } from '../utils/auth';
+import axios from 'axios';
+import { Loader2 } from 'lucide-react'; 
+
+axios.defaults.headers.common['Authorization'] = `Bearer ${getToken()}`;
 
 function RequestList() {
   const [requests, setRequests] = useState([]);
@@ -30,7 +34,7 @@ function RequestList() {
 
       {loading ? (
         <div className="flex justify-center items-center py-10">
-          <Loader2 className="animate-spin h-8 w-8 text-yellow-400" />
+          <Loader2 className="animate-spin h-8 w-8  text-yellow-400" />
         </div>
       ) : requests.length === 0 ? (
         <p className="text-gray-500 text-center italic">🎉 All requests are completed.</p>

@@ -14,3 +14,10 @@ model Request {
   status      String   @default("PENDING")
   createdAt   DateTime @default(now())
 }
+
+model Admin {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String   // hashed password
+  createdAt DateTime @default(now())
+}
