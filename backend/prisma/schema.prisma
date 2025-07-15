@@ -7,12 +7,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Guest {
+  id          String   @id @default(cuid())
+  telegramId  String   @unique
+  roomNumber  String
+  name        String?
+  checkInAt   DateTime @default(now())
+  requests    Request[]
+}
+
 model Request {
   id          Int      @id @default(autoincrement())
-  guestPhone  String
+  guestId     String?
   requestText String
-  status      String   @default("PENDING")
+  status      String   @default("pending")
   createdAt   DateTime @default(now())
+
+  guest       Guest?    @relation(fields: [guestId], references: [id])
 }
 
 model Admin {

@@ -6,4 +6,7 @@ router.post('/', requestController.createRequest);
 router.get('/', requestController.getPendingRequests);
 router.put('/:id/complete', requestController.markRequestAsCompleted);
 
+router.post("/checkin", requestController.checkinGuest);
+
+
 module.exports = router;
