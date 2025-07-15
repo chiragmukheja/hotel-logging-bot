@@ -3,13 +3,31 @@ const prisma = new PrismaClient();
 
 exports.createRequest = async (req, res) => {
   const { telegramId, requestText } = req.body;
+
+  if (!telegramId || !requestText) {
+    return res.status(400).json({ error: "telegramId and requestText are required" });
+  }
+
   try {
-    const request = await prisma.request.create({
-      data: { telegramId, requestText },
+    const guest = await prisma.guest.findUnique({
+      where: { telegramId },
     });
+
+    if (!guest) {
+      return res.status(404).json({ error: "Guest not found. Please check in first." });
+    }
+
+    const request = await prisma.request.create({
+      data: {
+        guestId: guest.id,
+        requestText,
+      },
+    });
+
     res.status(201).json(request);
-  } catch (err) {
-    res.status(500).json({ error: 'Error creating request', details: err });
+  } catch (error) {
+    console.error("Request creation error:", error);
+    res.status(500).json({ error: "Failed to create request" });
   }
 };
 
