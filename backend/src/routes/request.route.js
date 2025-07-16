@@ -8,5 +8,9 @@ router.put('/:id/complete', requestController.markRequestAsCompleted);
 
 router.post("/checkin", requestController.checkinGuest);
 
+router.get("/rooms", requestController.getRoomsWithPendingCount);
+router.get("/rooms/:roomNumber", requestController.getRoomDetails);
+
+
 
 module.exports = router;

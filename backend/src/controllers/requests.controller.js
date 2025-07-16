@@ -79,3 +79,67 @@ exports.checkinGuest = async (req, res) => {
     return res.status(500).json({ error: "Check-in failed" });
   }
 };
+
+exports.getRoomsWithPendingCount = async (req, res) => {
+  try {
+    const rooms = await prisma.guest.findMany({
+      where: {
+        requests: {
+          some: {
+            status: 'PENDING',
+          },
+        },
+      },
+      select: {
+        roomNumber: true,
+        _count: {
+          select: {
+            requests: {
+              where: {
+                status: 'PENDING',
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        roomNumber: 'asc',
+      },
+    });
+
+    res.json(rooms);
+  } catch (err) {
+    console.error("Error fetching rooms:", err);
+    res.status(500).json({ error: 'Failed to fetch rooms with pending requests' });
+  }
+};
+
+exports.getRoomDetails = async (req, res) => {
+  const { roomNumber } = req.params;
+
+  try {
+    const guest = await prisma.guest.findFirst({
+      where: { roomNumber },
+      include: {
+        requests: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    if (!guest) {
+      return res.status(404).json({ error: "No guest found in this room" });
+    }
+
+    res.json({
+      roomNumber: guest.roomNumber,
+      name: guest.name || null,
+      telegramId: guest.telegramId,
+      checkInAt: guest.checkInAt,
+      requests: guest.requests,
+    });
+  } catch (err) {
+    console.error("Error fetching room details:", err);
+    res.status(500).json({ error: 'Failed to fetch room details' });
+  }
+};
