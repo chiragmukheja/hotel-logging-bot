@@ -65,13 +65,13 @@ exports.checkinGuest = async (req, res) => {
 
   try {
     const guest = await prisma.guest.upsert({
-      where: { telegramId },
-      update: { roomNumber },
-      create: {
-        telegramId,
-        roomNumber,
-      },
-    });
+    where: { telegramId },
+    update: { roomNumber: roomNumber.trim() },
+    create: {
+      telegramId,
+      roomNumber: roomNumber.trim(),
+    },
+  });
 
     return res.status(200).json({ message: "Check-in successful", guest });
   } catch (error) {
