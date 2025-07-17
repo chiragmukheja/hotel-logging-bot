@@ -86,7 +86,7 @@ exports.getRoomsWithPendingCount = async (req, res) => {
       where: {
         requests: {
           some: {
-            status: 'PENDING',
+            status: 'pending',
           },
         },
       },
@@ -96,7 +96,7 @@ exports.getRoomsWithPendingCount = async (req, res) => {
           select: {
             requests: {
               where: {
-                status: 'PENDING',
+                status: 'pending',
               },
             },
           },
