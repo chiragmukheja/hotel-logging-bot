@@ -57,7 +57,7 @@ exports.markRequestAsCompleted = async (req, res) => {
 };
 
 exports.checkinGuest = async (req, res) => {
-  const { telegramId, roomNumber } = req.body;
+  const { telegramId, roomNumber, name } = req.body;
 
   if (!telegramId || !roomNumber) {
     return res.status(400).json({ error: "telegramId and roomNumber are required" });
@@ -65,13 +65,17 @@ exports.checkinGuest = async (req, res) => {
 
   try {
     const guest = await prisma.guest.upsert({
-    where: { telegramId },
-    update: { roomNumber: roomNumber.trim() },
-    create: {
-      telegramId,
-      roomNumber: roomNumber.trim(),
-    },
-  });
+      where: { telegramId },
+      update: {
+        roomNumber: roomNumber.trim(),
+        name: name || undefined,
+      },
+      create: {
+        telegramId,
+        roomNumber: roomNumber.trim(),
+        name: name || undefined,
+      },
+    });
 
     return res.status(200).json({ message: "Check-in successful", guest });
   } catch (error) {
@@ -79,6 +83,28 @@ exports.checkinGuest = async (req, res) => {
     return res.status(500).json({ error: "Check-in failed" });
   }
 };
+
+exports.updateGuestName = async (req, res) => {
+  const { telegramId } = req.params;
+  const { name } = req.body;
+
+  if (!name) {
+    return res.status(400).json({ error: "Name is required" });
+  }
+
+  try {
+    const guest = await prisma.guest.update({
+      where: { telegramId },
+      data: { name },
+    });
+
+    res.json({ message: "Name updated", guest });
+  } catch (err) {
+    console.error("Error updating guest name", err);
+    res.status(500).json({ error: "Failed to update name" });
+  }
+};
+
 
 exports.getRoomsWithPendingCount = async (req, res) => {
   try {

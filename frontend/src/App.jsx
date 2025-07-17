@@ -2,8 +2,9 @@ import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Login from './components/Login';
 import Register from './components/Register';
-import RequestList from './components/RequestList';
 import { getToken } from './utils/auth';
+import RoomList from './components/RoomList';
+import RoomDetail from './components/RoomDetail';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -64,11 +65,16 @@ function App() {
               isLoggedIn ? <Navigate to="/dashboard" /> : <Register onRegister={() => navigate('/auth/login')} />
             }
           />
-          <Route
-            path="/dashboard"
-            element={
-              isLoggedIn ? <RequestList /> : <Navigate to="/auth/login" />
-            }
+          <Route 
+          path="/dashboard" 
+          element={
+            isLoggedIn ? <RoomList /> : <Navigate to="/auth/login" />
+            } 
+          />
+          <Route 
+          path="/dashboard/room/:roomNumber" 
+          element={isLoggedIn ? <RoomDetail /> : <Navigate to="/auth/login" />
+            } 
           />
           <Route path="*" element={<Navigate to="/auth/login" />} />
         </Routes>
