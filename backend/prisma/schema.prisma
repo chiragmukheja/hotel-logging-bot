@@ -8,23 +8,33 @@ datasource db {
 }
 
 model Guest {
-  id          String   @id @default(cuid())
-  telegramId  String   @unique
-  roomNumber  String
-  name        String?
-  checkInAt   DateTime @default(now())
-  requests    Request[]
+  id         String   @id @default(cuid())
+  telegramId String   @unique
+  name       String?
+
+  stays      Stay[]
+}
+
+model Stay {
+  id         String   @id @default(cuid())
+  guestId    String
+  roomNumber String
+  checkInAt  DateTime @default(now())
+
+  guest      Guest    @relation(fields: [guestId], references: [id])
+  requests   Request[]
 }
 
 model Request {
   id          Int      @id @default(autoincrement())
-  guestId     String?
+  stayId      String
   requestText String
   status      String   @default("pending")
   createdAt   DateTime @default(now())
 
-  guest       Guest?    @relation(fields: [guestId], references: [id])
+  stay        Stay     @relation(fields: [stayId], references: [id])
 }
+
 
 model Admin {
   id        String   @id @default(uuid())

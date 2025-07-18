@@ -71,9 +71,8 @@ function App() {
             isLoggedIn ? <RoomList /> : <Navigate to="/auth/login" />
             } 
           />
-          <Route 
-          path="/dashboard/room/:roomNumber" 
-          element={isLoggedIn ? <RoomDetail /> : <Navigate to="/auth/login" />
+          <Route path="/dashboard/room/:stayId"
+           element={isLoggedIn ? <RoomDetail /> : <Navigate to="/auth/login" />
             } 
           />
           <Route path="*" element={<Navigate to="/auth/login" />} />

@@ -1,6 +1,41 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+// Guest check-in: creates a new Stay per visit
+exports.checkinGuest = async (req, res) => {
+  const { telegramId, roomNumber, name } = req.body;
+
+  if (!telegramId || !roomNumber) {
+    return res.status(400).json({ error: "telegramId and roomNumber are required" });
+  }
+
+  try {
+    let guest = await prisma.guest.findUnique({ where: { telegramId } });
+
+    if (!guest) {
+      guest = await prisma.guest.create({
+        data: {
+          telegramId,
+          name: name || undefined,
+        },
+      });
+    }
+
+    const stay = await prisma.stay.create({
+      data: {
+        guestId: guest.id,
+        roomNumber: roomNumber.trim(),
+      },
+    });
+
+    return res.status(200).json({ message: "Check-in successful", stay });
+  } catch (error) {
+    console.error("Check-in error:", error);
+    return res.status(500).json({ error: "Check-in failed" });
+  }
+};
+
+// Create request under current active stay
 exports.createRequest = async (req, res) => {
   const { telegramId, requestText } = req.body;
 
@@ -11,15 +46,23 @@ exports.createRequest = async (req, res) => {
   try {
     const guest = await prisma.guest.findUnique({
       where: { telegramId },
+      include: {
+        stays: {
+          orderBy: { checkedInAt: 'desc' },
+          take: 1,
+        },
+      },
     });
 
-    if (!guest) {
-      return res.status(404).json({ error: "Guest not found. Please check in first." });
+    if (!guest || guest.stays.length === 0) {
+      return res.status(404).json({ error: "Guest not checked in." });
     }
+
+    const currentStay = guest.stays[0];
 
     const request = await prisma.request.create({
       data: {
-        guestId: guest.id,
+        stayId: currentStay.id,
         requestText,
       },
     });
@@ -31,59 +74,68 @@ exports.createRequest = async (req, res) => {
   }
 };
 
-exports.getPendingRequests = async (req, res) => {
+// Fetch rooms with pending request count
+exports.getRoomsWithPendingCount = async (req, res) => {
   try {
-    const pending = await prisma.request.findMany({
-      where: { status: 'PENDING' },
-      orderBy: { createdAt: 'desc' },
-    });
-    res.json(pending);
-  } catch (err) {
-    res.status(500).json({ error: 'Error fetching requests', details: err });
-  }
-};
-
-exports.markRequestAsCompleted = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const updated = await prisma.request.update({
-      where: { id: parseInt(id) },
-      data: { status: 'COMPLETED' },
-    });
-    res.json(updated);
-  } catch (err) {
-    res.status(500).json({ error: 'Error updating request', details: err });
-  }
-};
-
-exports.checkinGuest = async (req, res) => {
-  const { telegramId, roomNumber, name } = req.body;
-
-  if (!telegramId || !roomNumber) {
-    return res.status(400).json({ error: "telegramId and roomNumber are required" });
-  }
-
-  try {
-    const guest = await prisma.guest.upsert({
-      where: { telegramId },
-      update: {
-        roomNumber: roomNumber.trim(),
-        name: name || undefined,
+    const stays = await prisma.stay.findMany({
+      where: {
+        requests: {
+          some: { status: 'pending' },
+        },
       },
-      create: {
-        telegramId,
-        roomNumber: roomNumber.trim(),
-        name: name || undefined,
+      select: {
+        id: true,
+        roomNumber: true,
+        _count: {
+          select: {
+            requests: {
+              where: { status: 'pending' },
+            },
+          },
+        },
+      },
+      orderBy: { roomNumber: 'asc' },
+    });
+
+    res.json(stays);
+  } catch (err) {
+    console.error("Error fetching rooms:", err);
+    res.status(500).json({ error: 'Failed to fetch rooms' });
+  }
+};
+
+// Get details of room (i.e., stay)
+exports.getRoomDetails = async (req, res) => {
+  const { stayId } = req.params;
+
+  try {
+    const stay = await prisma.stay.findUnique({
+      where: { id: stayId },
+      include: {
+        guest: true,
+        requests: { orderBy: { createdAt: 'desc' } },
       },
     });
 
-    return res.status(200).json({ message: "Check-in successful", guest });
-  } catch (error) {
-    console.error("Check-in error:", error);
-    return res.status(500).json({ error: "Check-in failed" });
+    if (!stay) {
+      return res.status(404).json({ error: "Stay not found." });
+    }
+
+    res.json({
+      stayId: stay.id,
+      roomNumber: stay.roomNumber,
+      checkInAt: stay.checkedInAt,
+      name: stay.guest.name || null,
+      telegramId: stay.guest.telegramId,
+      requests: stay.requests,
+    });
+  } catch (err) {
+    console.error("Error fetching room details:", err);
+    res.status(500).json({ error: 'Failed to fetch room details' });
   }
 };
 
+// Update name
 exports.updateGuestName = async (req, res) => {
   const { telegramId } = req.params;
   const { name } = req.body;
@@ -105,67 +157,16 @@ exports.updateGuestName = async (req, res) => {
   }
 };
 
-
-exports.getRoomsWithPendingCount = async (req, res) => {
+// Mark request as complete
+exports.markRequestAsCompleted = async (req, res) => {
+  const { id } = req.params;
   try {
-    const rooms = await prisma.guest.findMany({
-      where: {
-        requests: {
-          some: {
-            status: 'pending',
-          },
-        },
-      },
-      select: {
-        roomNumber: true,
-        _count: {
-          select: {
-            requests: {
-              where: {
-                status: 'pending',
-              },
-            },
-          },
-        },
-      },
-      orderBy: {
-        roomNumber: 'asc',
-      },
+    const updated = await prisma.request.update({
+      where: { id: parseInt(id) },
+      data: { status: 'COMPLETED' },
     });
-
-    res.json(rooms);
+    res.json(updated);
   } catch (err) {
-    console.error("Error fetching rooms:", err);
-    res.status(500).json({ error: 'Failed to fetch rooms with pending requests' });
-  }
-};
-
-exports.getRoomDetails = async (req, res) => {
-  const { roomNumber } = req.params;
-
-  try {
-    const guest = await prisma.guest.findFirst({
-      where: { roomNumber },
-      include: {
-        requests: {
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-    });
-
-    if (!guest) {
-      return res.status(404).json({ error: "No guest found in this room" });
-    }
-
-    res.json({
-      roomNumber: guest.roomNumber,
-      name: guest.name || null,
-      telegramId: guest.telegramId,
-      checkInAt: guest.checkInAt,
-      requests: guest.requests,
-    });
-  } catch (err) {
-    console.error("Error fetching room details:", err);
-    res.status(500).json({ error: 'Failed to fetch room details' });
+    res.status(500).json({ error: 'Error updating request', details: err });
   }
 };

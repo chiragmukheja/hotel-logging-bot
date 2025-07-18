@@ -17,13 +17,15 @@ export const getRoomSummary = async () => {
   return res.data;
 };
 
-export const getRoomDetails = async (roomNumber) => {
-  const res = await axios.get(`${BASE_URL}/rooms/${roomNumber}`);
+// ✅ Updated to fetch room detail by stayId
+export const getRoomDetails = async (stayId) => {
+  const res = await axios.get(`${BASE_URL}/rooms/${stayId}`);
   return res.data;
 };
 
+// ✅ Also updated to use stayId for updating name
 export const updateGuestName = async (telegramId, name) => {
-  const res = await fetch(`/requests/guest/${telegramId}/update-name`, {
+  const res = await fetch(`${BASE_URL}/guest/${telegramId}/update-name`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name }),

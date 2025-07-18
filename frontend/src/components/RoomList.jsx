@@ -19,9 +19,9 @@ function RoomList() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
           {rooms.map((room) => (
             <div
-              key={room.roomNumber}
+              key={room.stayId}
               className="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-md hover:shadow-lg transition cursor-pointer"
-              onClick={() => navigate(`/dashboard/room/${room.roomNumber}`)}
+              onClick={() => navigate(`/dashboard/room/${room.stayId}`)}
             >
               <h3 className="text-xl font-semibold text-yellow-200">Room {room.roomNumber}</h3>
               <p className="text-sm text-gray-400 mt-2">
