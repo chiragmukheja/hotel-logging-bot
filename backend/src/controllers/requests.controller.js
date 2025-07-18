@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+console.log("✅ requests.controller.js loaded");
 // Guest check-in: creates a new Stay per visit
 exports.checkinGuest = async (req, res) => {
   const { telegramId, roomNumber, name } = req.body;
