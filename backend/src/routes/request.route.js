@@ -4,7 +4,6 @@ const requestController = require('../controllers/requests.controller');
 
 // Request-related routes
 router.post('/', requestController.createRequest);
-router.get('/', requestController.getPendingRequests);
 router.put('/:id/complete', requestController.markRequestAsCompleted);
 
 // Guest-related routes
