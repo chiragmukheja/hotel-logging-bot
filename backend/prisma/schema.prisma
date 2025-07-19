@@ -12,7 +12,7 @@ model Guest {
   telegramId String  @unique
   name       String?
 
-  stays      Stay[]
+  stays      Stay[] @relation("GuestStays")
 }
 
 model Stay {
@@ -21,7 +21,7 @@ model Stay {
   checkedInAt  DateTime  @default(now())
 
   guestId      String
-  guest        Guest     @relation(fields: [guestId], references: [id])
+  guest        Guest     @relation("GuestStays", fields: [guestId], references: [id])
 
   requests     Request[]
 }
