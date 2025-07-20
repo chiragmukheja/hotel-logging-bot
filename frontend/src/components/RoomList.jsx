@@ -17,10 +17,6 @@ function RoomList() {
   };
 
   useEffect(() => {
-    
-    socket.on("connect", () => {
-    console.log("✅ Socket connected!");
-    });
 
     fetchRooms();
     socket.on("new-request", () => {

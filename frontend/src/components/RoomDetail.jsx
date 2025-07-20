@@ -13,7 +13,6 @@ function RoomDetail() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("🧩 RoomDetail mounted. Socket connected?", socket.connected);
     getRoomDetails(stayId)
       .then((data) => {
         setRoomData(data);
