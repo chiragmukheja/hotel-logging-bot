@@ -4,9 +4,14 @@ const { Server } = require('socket.io');
 
 const server = http.createServer(app);
 
+const allowedOrigins = [
+  "http://localhost:5173",           // Dev
+  process.env.FRONTEND_ORIGIN,       // Prod
+].filter(Boolean); // remove undefined entries
+
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: allowedOrigins,
     methods: ["GET", "POST", "PUT"],
     credentials: true,
   },
