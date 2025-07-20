@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Login from './components/Login';
 import Register from './components/Register';
@@ -7,15 +7,13 @@ import RoomList from './components/RoomList';
 import RoomDetail from './components/RoomDetail';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(null); // null = unknown, true/false = known
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    if (getToken()) {
-      setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
-    }
+    const token = getToken();
+    setIsLoggedIn(!!token);
   }, []);
 
   const handleLogin = () => {
@@ -28,6 +26,11 @@ function App() {
     setIsLoggedIn(false);
     navigate('/auth/login');
   };
+
+  if (isLoggedIn === null) {
+    // Wait until token is checked
+    return <p className="text-center text-gray-400 mt-10">Checking session...</p>;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white font-sans">
@@ -66,13 +69,15 @@ function App() {
             }
           />
           <Route 
-          path="/dashboard" 
-          element={
-            isLoggedIn ? <RoomList /> : <Navigate to="/auth/login" />
+            path="/dashboard" 
+            element={
+              isLoggedIn ? <RoomList /> : <Navigate to="/auth/login" state={{ from: location }} replace />
             } 
           />
-          <Route path="/dashboard/room/:stayId"
-           element={isLoggedIn ? <RoomDetail /> : <Navigate to="/auth/login" />
+          <Route 
+            path="/dashboard/room/:stayId"
+            element={
+              isLoggedIn ? <RoomDetail /> : <Navigate to="/auth/login" state={{ from: location }} replace />
             } 
           />
           <Route path="*" element={<Navigate to="/auth/login" />} />

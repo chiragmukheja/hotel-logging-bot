@@ -68,8 +68,8 @@ exports.createRequest = async (req, res) => {
     });
 
     if (req.app.get("io")) {
-    req.app.get("io").emit("new-request", request);
-  }
+      req.app.get("io").emit("new-request", request);
+    }
 
     res.status(201).json(request);
   } catch (error) {

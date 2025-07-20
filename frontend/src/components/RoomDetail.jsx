@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getRoomDetails, markRequestAsDone, updateGuestName } from "../api/requests";
+import { socket } from "../socket";
+
 
 function RoomDetail() {
   const { stayId } = useParams();
@@ -11,6 +13,7 @@ function RoomDetail() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log("🧩 RoomDetail mounted. Socket connected?", socket.connected);
     getRoomDetails(stayId)
       .then((data) => {
         setRoomData(data);
@@ -21,6 +24,24 @@ function RoomDetail() {
         console.error("Failed to fetch room data:", err);
         setLoading(false);
       });
+
+    const handleNewRequest = (request) => {
+        console.log("🔁 Incoming socket request:", request.stayId, "vs", stayId);
+
+        // Only update if the request is for the current stay
+        if (request.stayId?.trim() === stayId?.trim()) {
+        setRoomData((prev) => ({
+            ...prev,
+            requests: [request, ...prev.requests],
+        }));
+        }
+    };
+
+    socket.on("new-request", handleNewRequest);
+
+    return () => {
+        socket.off("new-request", handleNewRequest); // clean up on unmount
+    };
   }, [stayId]);
 
   const handleMarkDone = async (id) => {
@@ -117,17 +138,17 @@ function RoomDetail() {
               </p>
               <p
                 className={`mt-1 inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                  req.status === "PENDING"
+                  req.status?.toUpperCase() === "PENDING"
                     ? "bg-yellow-500 text-black"
                     : "bg-green-700 text-white"
                 }`}
               >
                 {req.status}
               </p>
-              {req.status === "PENDING" && (
+              {req.status?.toUpperCase() === "PENDING" && (
                 <button
                   onClick={() => handleMarkDone(req.id)}
-                  className="ml-4 bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded-lg text-sm transition"
+                  className="ml-4 mt-1.5 bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded-lg text-sm transition"
                 >
                   Mark as Done
                 </button>
