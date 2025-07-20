@@ -67,6 +67,14 @@ exports.createRequest = async (req, res) => {
       },
     });
 
+    if (req.app.get("io")) {
+    req.app.get("io").emit("new-request", {
+      stayId: currentStay.id,
+      roomNumber: currentStay.roomNumber,
+      requestText,
+    });
+}
+
     res.status(201).json(request);
   } catch (error) {
     console.error("Request creation error:", error);
