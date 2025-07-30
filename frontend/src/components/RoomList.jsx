@@ -78,7 +78,27 @@ function DashboardPage() {
 
       <div>
         <h2 className="text-2xl font-bold text-yellow-300 mb-6">Rooms with Active Requests</h2>
-        {/* ... The rest of your JSX for the rooms list is unchanged ... */}
+        {rooms.length === 0 ? (
+          <div className="text-center py-16 bg-gray-800/30 rounded-lg">
+            <CheckCircleIcon className="w-12 h-12 mx-auto text-green-500" />
+            <p className="text-gray-400 mt-4 text-lg">🎉 All guest requests are completed!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+            {rooms.map((room) => (
+              <div
+                key={room.id}
+                className="bg-gray-800/50 border border-white/20 rounded-xl p-5 shadow-lg hover:shadow-cyan-500/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer backdrop-blur-sm"
+                onClick={() => navigate(`/dashboard/room/${room.id}`)}
+              >
+                <h3 className="text-xl font-semibold text-yellow-200">Room {room.roomNumber}</h3>
+                <p className="text-sm text-gray-400 mt-2">
+                  {room._count.requests} pending request{room._count.requests > 1 ? 's' : ''}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
