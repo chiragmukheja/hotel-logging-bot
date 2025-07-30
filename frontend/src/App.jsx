@@ -10,6 +10,7 @@ import Sidebar from './components/Layout/Sidebar'; // Import the new Sidebar
 
 // Utils
 import { getToken } from './utils/auth';
+import AllRequestsPage from './pages/AllRequestsPage';
 
 // The new Layout component for authenticated users
 const AppLayout = ({ handleLogout }) => (
