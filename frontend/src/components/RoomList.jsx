@@ -49,7 +49,9 @@ function DashboardPage() {
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         <DashboardStatCard
           title="Total Pending Requests"
           value={totalPending}
@@ -62,17 +64,13 @@ function DashboardPage() {
           icon={<ListIcon className="w-7 h-7" />}
           color="cyan"
         />
-        {/* ✅ Updated with real data */}
-        <DashboardStatCard
-          title="Avg. Response Time"
-          value={`${stats.averageResponseTime}m`}
-          icon={<ClockIcon className="w-7 h-7" />}
-          color="green"
-        />
-        {/* ✅ Updated with real data */}
+
         <DashboardStatCard
           title="Highest Priority"
-          value={`Room ${stats.highestPriorityRoom}`}
+          value={stats.highestPriorityRoom !== 'N/A' 
+                   ? `${stats.highestPriorityRoom}` 
+                   : 'N/A'
+                }
           icon={<BellAlertIcon className="w-7 h-7" />}
           color="red"
         />
@@ -80,7 +78,7 @@ function DashboardPage() {
 
       <div>
         <h2 className="text-2xl font-bold text-yellow-300 mb-6">Rooms with Active Requests</h2>
-        {/* ... rest of the component is unchanged ... */}
+        {/* ... The rest of your JSX for the rooms list is unchanged ... */}
       </div>
     </div>
   );

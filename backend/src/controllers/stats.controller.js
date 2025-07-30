@@ -3,41 +3,28 @@ const prisma = new PrismaClient();
 
 
 exports.getDashboardStats = async (req, res) => {
+  let highestPriorityRoom = 'N/A';
+
   try {
-    const [completedRequests, oldestPendingRequest] = await Promise.all([
-      prisma.request.findMany({
-        where: { status: 'COMPLETED' },
-        select: { createdAt: true, updatedAt: true },
-      }),
-      prisma.request.findFirst({
-        where: { status: 'pending' },
-        orderBy: { createdAt: 'asc' },
-        include: { stay: { select: { roomNumber: true } } },
-      }),
-    ]);
+    // We only need to calculate the highest priority room now
+    const oldestPendingRequest = await prisma.request.findFirst({
+      where: { status: 'pending' },
+      orderBy: { createdAt: 'asc' },
+      include: { stay: { select: { roomNumber: true } } },
+    });
 
-    let averageResponseTime = 0;
-    if (completedRequests.length > 0) {
-      const totalResponseMilliseconds = completedRequests.reduce((acc, req) => {
-        // Ensure both dates are valid before calculating
-        if (req.updatedAt && req.createdAt) {
-          const diff = new Date(req.updatedAt).getTime() - new Date(req.createdAt).getTime();
-          return acc + diff;
-        }
-        return acc;
-      }, 0);
-      const avgMilliseconds = totalResponseMilliseconds / completedRequests.length;
-      averageResponseTime = Math.round(avgMilliseconds / 60000); // Convert to minutes
+    if (oldestPendingRequest?.stay?.roomNumber) {
+      highestPriorityRoom = oldestPendingRequest.stay.roomNumber;
     }
-
-    const highestPriorityRoom = oldestPendingRequest?.stay?.roomNumber || 'N/A';
-
+    
+    // Always succeed, returning only the data we can calculate
     res.status(200).json({
-      averageResponseTime,
+      // We no longer calculate averageResponseTime
       highestPriorityRoom,
     });
+
   } catch (error) {
-    console.error("Failed to get dashboard stats:", error);
-    res.status(500).json({ message: "Failed to retrieve dashboard stats" });
+    console.error("Error in getDashboardStats:", error);
+    res.status(500).json({ message: "An unexpected error occurred" });
   }
 };
