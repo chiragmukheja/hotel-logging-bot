@@ -60,18 +60,37 @@ exports.createRequest = async (req, res) => {
 
     const currentStay = guest.stays[0];
 
-    const request = await prisma.request.create({
+    // 1. Create the basic request
+    const newRequest = await prisma.request.create({
       data: {
         stayId: currentStay.id,
         requestText,
       },
     });
 
+    // ✅ 2. Refetch the request with all relations for the socket event
+    const fullRequestData = await prisma.request.findUnique({
+      where: { id: newRequest.id },
+      include: {
+        stay: {
+          select: {
+            roomNumber: true,
+            guest: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // 3. Emit the complete data package
     if (req.app.get("io")) {
-      req.app.get("io").emit("new-request", request);
+      req.app.get("io").emit("new-request", fullRequestData);
     }
 
-    res.status(201).json(request);
+    res.status(201).json(fullRequestData);
   } catch (error) {
     console.error("Request creation error:", error);
     res.status(500).json({ error: "Failed to create request" });
