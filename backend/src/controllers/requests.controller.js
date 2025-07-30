@@ -174,3 +174,30 @@ exports.markRequestAsCompleted = async (req, res) => {
     res.status(500).json({ error: 'Error updating request', details: err });
   }
 };
+
+// Get all requests with guest and room info
+exports.getAllRequests = async (req, res) => {
+  try {
+    const requests = await prisma.request.findMany({
+      orderBy: {
+        createdAt: 'desc', // Show newest requests first
+      },
+      include: {
+        stay: {
+          select: {
+            roomNumber: true,
+            guest: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    res.status(200).json(requests);
+  } catch (error) {
+    console.error("Failed to get all requests:", error);
+    res.status(500).json({ error: "Failed to retrieve requests" });
+  }
+};
