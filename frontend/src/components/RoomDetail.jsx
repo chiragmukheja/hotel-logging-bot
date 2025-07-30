@@ -1,161 +1,185 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { getRoomDetails, markRequestAsDone, updateGuestName } from "../api/requests";
-import { socket } from "../socket";
+import { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { getRoomDetails, markRequestAsDone, updateGuestName } from '../api/requests';
+import { socket } from '../socket';
+import { format } from 'date-fns';
 
+// A reusable StatusBadge component for consistent styling.
+const StatusBadge = ({ status }) => {
+  const baseClasses = "px-3 py-1 text-xs font-medium rounded-full capitalize";
+  const statusClasses = {
+    pending: "bg-yellow-500/20 text-yellow-300",
+    COMPLETED: "bg-green-500/20 text-green-400",
+  };
+  return (
+    <span className={`${baseClasses} ${statusClasses[status] || 'bg-gray-500/20 text-gray-300'}`}>
+      {status.toLowerCase()}
+    </span>
+  );
+};
 
 function RoomDetail() {
+  // --- HOOKS & STATE ---
   const { stayId } = useParams();
-  const [roomData, setRoomData] = useState(null);
+  const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  
+  // ✅ State for handling the editable name feature
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
-  const navigate = useNavigate();
 
+  // --- DATA FETCHING & REAL-TIME LOGIC ---
   useEffect(() => {
-    getRoomDetails(stayId)
-      .then((data) => {
-        setRoomData(data);
-        setNameInput(data.name || "");
+    const fetchDetails = async () => {
+      try {
+        setLoading(true);
+        const data = await getRoomDetails(stayId);
+        setDetails(data);
+        setNameInput(data.name || ""); // Initialize the name input
+      } catch (err) {
+        console.error("Failed to fetch room details:", err);
+        setError('Failed to load room details. Please try again.');
+      } finally {
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch room data:", err);
-        setLoading(false);
-      });
-
-    const handleNewRequest = (request) => {
-        console.log("🔁 Incoming socket request:", request.stayId, "vs", stayId);
-
-        // Only update if the request is for the current stay
-        if (request.stayId?.trim() === stayId?.trim()) {
-        setRoomData((prev) => ({
-            ...prev,
-            requests: [request, ...prev.requests],
-        }));
-        }
+      }
     };
+    fetchDetails();
 
+    // ✅ Real-time socket listener for new requests
+    const handleNewRequest = (request) => {
+      // Check if the incoming request belongs to the currently viewed stay
+      if (request.stayId?.trim() === stayId?.trim()) {
+        setDetails((prev) => ({
+          ...prev,
+          requests: [request, ...prev.requests],
+        }));
+      }
+    };
     socket.on("new-request", handleNewRequest);
 
+    // Cleanup the socket listener when the component unmounts
     return () => {
-        socket.off("new-request", handleNewRequest); // clean up on unmount
+      socket.off("new-request", handleNewRequest);
     };
   }, [stayId]);
 
-  const handleMarkDone = async (id) => {
+  // --- ACTION HANDLERS ---
+  const handleMarkAsDone = async (requestId) => {
     try {
-      await markRequestAsDone(id);
-      setRoomData((prev) => ({
-        ...prev,
-        requests: prev.requests.map((r) =>
-          r.id === id ? { ...r, status: "COMPLETED" } : r
+      await markRequestAsDone(requestId);
+      setDetails(prevDetails => ({
+        ...prevDetails,
+        requests: prevDetails.requests.map(req =>
+          req.id === requestId ? { ...req, status: 'COMPLETED' } : req
         ),
       }));
     } catch (err) {
-      console.error("Failed to mark as done", err);
+      console.error("Failed to mark request as done", err);
     }
   };
-
+  
+  // ✅ Handler for saving the guest's name
   const handleNameSave = async () => {
+    if (details.name === nameInput) {
+        setEditingName(false);
+        return;
+    }
     try {
-      await updateGuestName(roomData.telegramId, nameInput);
-      setRoomData((prev) => ({
-        ...prev,
-        name: nameInput,
-      }));
+      await updateGuestName(details.telegramId, nameInput);
+      setDetails((prev) => ({ ...prev, name: nameInput }));
       setEditingName(false);
     } catch (err) {
       console.error("Failed to update guest name", err);
     }
   };
 
-  if (loading) return <p className="text-gray-300">Loading room data...</p>;
-  if (!roomData || !roomData.roomNumber) return <p className="text-red-400">Room not found.</p>;
+
+  // --- RENDER LOGIC ---
+  if (loading) return <p className="text-center mt-10">Loading Room Details...</p>;
+  if (error) return <p className="text-center mt-10 text-red-400">{error}</p>;
+  if (!details) return null;
 
   return (
-    <div>
-      <button
-        onClick={() => navigate("/dashboard")}
-        className="text-white py-2 rounded-md transition"
-      >
-        ← Back to Dashboard
-      </button>
+    <div className="space-y-6">
+      <Link to="/dashboard" className="inline-flex items-center text-cyan-400 hover:text-cyan-300 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
+        </svg>
+        Back to Dashboard
+      </Link>
 
-      <h2 className="text-3xl font-bold text-yellow-400 mb-6">
-        Room {roomData.roomNumber}
-      </h2>
+      <h1 className="text-3xl font-bold text-white">Room <span className="text-yellow-400">{details.roomNumber}</span></h1>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-1 space-y-6">
+          <div className="bg-gray-800/50 border border-white/10 rounded-xl shadow-lg p-6">
+            <h2 className="text-xl font-semibold text-white mb-4">Guest Information</h2>
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm text-gray-400">Name</p>
+                {/* ✅ Conditional rendering for the editable name input */}
+                {editingName ? (
+                   <input
+                    type="text"
+                    value={nameInput}
+                    onChange={(e) => setNameInput(e.target.value)}
+                    onBlur={handleNameSave}
+                    onKeyDown={(e) => e.key === "Enter" && handleNameSave()}
+                    autoFocus
+                    className="w-full bg-gray-700 text-white p-1.5 rounded-md border border-cyan-500"
+                  />
+                ) : (
+                  <p 
+                    className="font-medium text-yellow-300 cursor-pointer hover:underline"
+                    onClick={() => setEditingName(true)}
+                  >
+                    {details.name || "Click to add name"}
+                  </p>
+                )}
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Telegram ID</p>
+                <p className="font-medium">{details.telegramId}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Check-in Time</p>
+                <p className="font-medium">{format(new Date(details.checkInAt), 'dd MMM yyyy, hh:mm a')}</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      <div className="mb-8 p-4 rounded-lg bg-gray-800 border border-gray-700">
-        <h3 className="text-lg font-semibold text-white mb-2">Guest Information</h3>
-        <p className="text-gray-300">
-          Name:{" "}
-          {editingName ? (
-            <input
-              type="text"
-              value={nameInput}
-              onChange={(e) => setNameInput(e.target.value)}
-              onBlur={handleNameSave}
-              onKeyDown={(e) => e.key === "Enter" && handleNameSave()}
-              autoFocus
-              className="bg-gray-700 text-white p-1 rounded"
-            />
-          ) : (
-            <span
-              className="text-yellow-300 cursor-pointer hover:underline"
-              onClick={() => setEditingName(true)}
-            >
-              {roomData.name || "Click to add"}
-            </span>
-          )}
-        </p>
-        <p className="text-gray-300">
-          Telegram ID:{" "}
-          <span className="text-yellow-300">{roomData.telegramId}</span>
-        </p>
-        <p className="text-gray-300">
-          Check-in Time:{" "}
-          <span className="text-yellow-300">
-            {new Date(roomData.checkInAt).toLocaleString()}
-          </span>
-        </p>
+        <div className="lg:col-span-2">
+          <h2 className="text-xl font-semibold text-white mb-4">Request History</h2>
+          <div className="space-y-4">
+            {details.requests.map(req => (
+              <div key={req.id} className="bg-gray-800/50 border border-white/10 rounded-xl p-4 flex items-center justify-between gap-4">
+                <div className='flex-grow'>
+                  <p className="text-gray-200">{req.requestText}</p>
+                  <p className="text-xs text-gray-500 mt-1">{format(new Date(req.createdAt), 'dd MMM, hh:mm a')}</p>
+                </div>
+                <div className="flex items-center space-x-4 flex-shrink-0">
+                  <StatusBadge status={req.status} />
+                  {req.status === 'pending' && (
+                    <button
+                      onClick={() => handleMarkAsDone(req.id)}
+                      className="font-medium text-green-400 hover:text-green-300 text-sm whitespace-nowrap"
+                    >
+                      Mark as Done
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+            {details.requests.length === 0 && (
+              <div className="text-center py-10 bg-gray-800/30 rounded-lg">
+                <p className="text-gray-400">No requests have been made for this stay.</p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-
-      <h3 className="text-xl font-semibold text-white mb-4">Request History</h3>
-      {roomData.requests.length === 0 ? (
-        <p className="text-gray-400 italic">No requests made yet.</p>
-      ) : (
-        <ul className="space-y-4">
-          {roomData.requests.map((req) => (
-            <li
-              key={req.id}
-              className="p-4 bg-gray-900 border border-gray-700 rounded-lg"
-            >
-              <p className="text-white">{req.requestText}</p>
-              <p className="text-sm text-gray-400">
-                Created: {new Date(req.createdAt).toLocaleString()}
-              </p>
-              <p
-                className={`mt-1 inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                  req.status?.toUpperCase() === "PENDING"
-                    ? "bg-yellow-500 text-black"
-                    : "bg-green-700 text-white"
-                }`}
-              >
-                {req.status}
-              </p>
-              {req.status?.toUpperCase() === "PENDING" && (
-                <button
-                  onClick={() => handleMarkDone(req.id)}
-                  className="ml-4 mt-1.5 bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded-lg text-sm transition"
-                >
-                  Mark as Done
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 }
