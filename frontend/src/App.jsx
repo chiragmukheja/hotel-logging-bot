@@ -18,17 +18,19 @@ const AppLayout = ({ handleLogout }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0F172A]">
-      <Sidebar isSidebarOpen={isSidebarOpen} handleLogout={handleLogout} />
-      {/* Overlay for mobile when sidebar is open */}
-      {isSidebarOpen && <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black/50 z-10 lg:hidden"></div>}
-      
-      {/* ✅ Margin is now responsive */}
-      <div className="lg:ml-64">
-        <Header onMenuClick={() => setSidebarOpen(true)} />
-        <main className="px-4 sm:px-6 md:px-10 py-8 max-w-7xl mx-auto">
-          <Outlet /> 
-        </main>
+
+    <div className="min-h-screen bg-gradient-to-br from-[#0B0F2B] via-[#120E2A] to-[#0A0A10]">
+
+      <div className="relative z-10">
+        <Sidebar isSidebarOpen={isSidebarOpen} handleLogout={handleLogout} />
+        {isSidebarOpen && <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black/50 lg:hidden"></div>}
+        
+        <div className="lg:ml-64">
+          <Header onMenuClick={() => setSidebarOpen(true)} />
+          <main className="px-4 sm:px-6 md:px-10 py-8 max-w-7xl mx-auto">
+            <Outlet /> 
+          </main>
+        </div>
       </div>
     </div>
   );

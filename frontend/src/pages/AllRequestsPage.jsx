@@ -121,7 +121,7 @@ const AllRequestsPage = () => {
             placeholder="Search room, guest, or request..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-gray-800/60 border border-white/10 rounded-lg py-2 pl-4 pr-10 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+            className="w-full text-gray-400 bg-gray-800/60 border border-white/10 rounded-lg py-2 pl-4 pr-10 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
           />
           <SearchIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
         </div>
@@ -172,8 +172,8 @@ const AllRequestsPage = () => {
               {filteredRequests.map((req) => (
                 <tr key={req.id} className="border-b border-gray-700/50 hover:bg-gray-700/40 transition-colors">
                   <td className="px-6 py-4 font-medium text-yellow-300">{req.stay?.roomNumber}</td>
-                  <td className="px-6 py-4">{req.stay?.guest?.name || 'N/A'}</td>
-                  <td className="px-6 py-4 max-w-sm truncate" title={req.requestText}>{req.requestText}</td>
+                  <td className="px-6 py-4 text-gray-200">{req.stay?.guest?.name || 'N/A'}</td>
+                  <td className="px-6 py-4 text-gray-400 max-w-sm truncate" title={req.requestText}>{req.requestText}</td>
                   <td className="px-6 py-4"><StatusBadge status={req.status} /></td>
                   <td className="px-6 py-4 text-gray-400">{format(new Date(req.createdAt), 'dd MMM, hh:mm a')}</td>
                   <td className="px-6 py-4 text-center">

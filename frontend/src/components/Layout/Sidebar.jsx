@@ -13,7 +13,7 @@ const Sidebar = ({ isSidebarOpen, handleLogout }) => {
                      ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
                      lg:translate-x-0`}>
       <div className="flex items-center justify-center h-24 border-b border-white/10">
-        <h1 className="text-3xl font-bold text-yellow-400 tracking-wide">LuxeStay</h1>
+        <h1 className="text-3xl font-bold text-yellow-400 tracking-wide">EchoServe</h1>
       </div>
 
       <nav className="flex-1 px-4 py-6 space-y-2">

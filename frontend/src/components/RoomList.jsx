@@ -88,13 +88,20 @@ function DashboardPage() {
             {rooms.map((room) => (
               <div
                 key={room.id}
-                className="bg-gray-800/50 border border-white/20 rounded-xl p-5 shadow-lg hover:shadow-cyan-500/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer backdrop-blur-sm"
+                
+                className="group relative bg-gray-800/50 border border-white/10 rounded-xl p-5 shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
                 onClick={() => navigate(`/dashboard/room/${room.id}`)}
               >
-                <h3 className="text-xl font-semibold text-yellow-200">Room {room.roomNumber}</h3>
-                <p className="text-sm text-gray-400 mt-2">
-                  {room._count.requests} pending request{room._count.requests > 1 ? 's' : ''}
-                </p>
+                
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-yellow-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-lg"></div>
+
+                {/* content sits on top with a relative position */}
+                <div className="relative">
+                  <h3 className="text-xl font-semibold text-yellow-200">Room {room.roomNumber}</h3>
+                  <p className="text-sm text-gray-400 mt-2">
+                    {room._count.requests} pending request{room._count.requests > 1 ? 's' : ''}
+                  </p>
+                </div>
               </div>
             ))}
           </div>

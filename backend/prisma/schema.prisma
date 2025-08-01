@@ -19,7 +19,9 @@ model Stay {
   id           String    @id @default(cuid())
   roomNumber   String
   checkedInAt  DateTime  @default(now())
-
+  
+  status       String    @default("ACTIVE") 
+  
   guestId      String
   guest        Guest     @relation("GuestStays", fields: [guestId], references: [id])
 
