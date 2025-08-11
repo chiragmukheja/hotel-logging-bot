@@ -90,7 +90,7 @@ const AllRequestsPage = () => {
   };
 
   if (loading) {
-    return <p className="text-center mt-10">Loading requests...</p>;
+    return <p className="text-center text-gray-400 mt-10">Loading requests...</p>;
   }
 
   

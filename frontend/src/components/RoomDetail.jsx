@@ -120,7 +120,7 @@ function RoomDetail() {
     }
   };
 
-  if (loading) return <p className="text-center mt-10">Loading Room Details...</p>;
+  if (loading) return <p className="text-center text-gray-400 mt-10">Loading Room Details...</p>;
   if (error) return <p className="text-center mt-10 text-red-400">{error}</p>;
   if (!details) return null;
 
@@ -167,11 +167,11 @@ function RoomDetail() {
               </div>
               <div>
                 <p className="text-sm text-gray-400">Telegram ID</p>
-                <p className="font-medium">{details.telegramId}</p>
+                <p className="font-medium text-gray-200">{details.telegramId}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-400">Check-in Time</p>
-                <p className="font-medium">{format(new Date(details.checkInAt), 'dd MMM yyyy, hh:mm a')}</p>
+                <p className="font-medium text-gray-200">{format(new Date(details.checkInAt), 'dd MMM yyyy, hh:mm a')}</p>
               </div>
             </div>
 
