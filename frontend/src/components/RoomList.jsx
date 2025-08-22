@@ -4,7 +4,7 @@ import { getRoomSummary } from "../api/requests";
 import { getDashboardStats } from "../api/stats";
 import { socket } from "../socket";
 import DashboardStatCard from "./Layout/DashboardStatCard";
-import { BellAlertIcon, CheckCircleIcon, ClockIcon, ListIcon } from "./Layout/Icons";
+import { BellAlertIcon, CheckCircleIcon, ClockIcon, ListIcon } from "./layout/Icons";
 
 function DashboardPage() {
   const [rooms, setRooms] = useState([]);

@@ -1,26 +1,19 @@
 import { Routes, Route, Navigate, useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-
-// Pages & Components
-import Login from './components/Login';
-import Register from './components/Register';
-import DashboardPage from './components/RoomList'; 
+import { useState, useEffect } from 'react';
+import AuthPage from './pages/AuthPage';
+import DashboardPage from './components/RoomList';
 import RoomDetail from './components/RoomDetail';
 import AllRequestsPage from './pages/AllRequestsPage';
-import Sidebar from './components/Layout/Sidebar';
-import Header from './components/Layout/Header'; 
-
-// Utils
+import Sidebar from './components/layout/Sidebar';
+import Header from './components/layout/Header';
 import { getToken } from './utils/auth';
 
-// The new Layout component for authenticated users
+
 const AppLayout = ({ handleLogout }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-
-    <div className="min-h-screen bg-gradient-to-br from-[#0B0F2B] via-[#120E2A] to-[#0A0A10]">
-
+    <div className="min-h-screen">
       <div className="relative z-10">
         <Sidebar isSidebarOpen={isSidebarOpen} handleLogout={handleLogout} />
         {isSidebarOpen && <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black/50 lg:hidden"></div>}
@@ -36,11 +29,9 @@ const AppLayout = ({ handleLogout }) => {
   );
 };
 
-
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!getToken());
   const navigate = useNavigate();
-  const location = useLocation();
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -50,25 +41,29 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     setIsLoggedIn(false);
-    navigate('/auth/login');
+    navigate('/auth');
   };
 
   return (
-    <Routes>
-      <Route path="/auth/login" element={isLoggedIn ? <Navigate to="/dashboard" /> : <Login onLogin={handleLogin} />} />
-      <Route path="/auth/register" element={isLoggedIn ? <Navigate to="/dashboard" /> : <Register onRegister={() => navigate('/auth/login')} />} />
-
-      {isLoggedIn ? (
-        <Route element={<AppLayout handleLogout={handleLogout} />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/requests" element={<AllRequestsPage />} />
-          <Route path="/dashboard/room/:stayId" element={<RoomDetail />} />
-          <Route path="*" element={<Navigate to="/dashboard" />} />
-        </Route>
-      ) : (
-        <Route path="*" element={<Navigate to="/auth/login" state={{ from: location }} replace />} />
-      )}
-    </Routes>
+    <div className="min-h-screen bg-gradient-to-br from-[#0B0F2B] via-[#120E2A] to-[#0A0A10]">
+      <Routes>
+        <Route 
+          path="/auth" 
+          element={isLoggedIn ? <Navigate to="/dashboard" /> : <AuthPage onLogin={handleLogin} />} 
+        />
+        
+        {isLoggedIn ? (
+          <Route element={<AppLayout handleLogout={handleLogout} />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/requests" element={<AllRequestsPage />} />
+            <Route path="/dashboard/room/:stayId" element={<RoomDetail />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Route>
+        ) : (
+          <Route path="*" element={<Navigate to="/auth" replace />} />
+        )}
+      </Routes>
+    </div>
   );
 }
 
