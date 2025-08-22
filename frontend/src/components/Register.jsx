@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { UserIcon, LockIcon } from './layout/Icons';
+import { UserIcon, LockIcon } from './Layout/Icons';
 
 function Register({ onRegister }) {
   const [username, setUsername] = useState('');
