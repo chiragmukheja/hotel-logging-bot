@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { getRoomSummary } from "../api/requests";
 import { getDashboardStats } from "../api/stats";
 import { socket } from "../socket";
-import DashboardStatCard from "./layout/DashboardStatCard";
-import { BellAlertIcon, CheckCircleIcon, ClockIcon, ListIcon } from "./layout/Icons";
+import DashboardStatCard from "./Layout/DashboardStatCard";
+import { BellAlertIcon, CheckCircleIcon, ClockIcon, ListIcon } from "./Layout/Icons";
 
 function DashboardPage() {
   const [rooms, setRooms] = useState([]);
