@@ -4,8 +4,8 @@ import AuthPage from './pages/AuthPage';
 import DashboardPage from './components/RoomList';
 import RoomDetail from './components/RoomDetail';
 import AllRequestsPage from './pages/AllRequestsPage';
-import Sidebar from './components/layout/Sidebar';
-import Header from './components/layout/Header';
+import Sidebar from './components/Layout/Sidebar';
+import Header from './components/Layout/Header';
 import { getToken } from './utils/auth';
 
 
