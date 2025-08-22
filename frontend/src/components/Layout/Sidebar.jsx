@@ -1,4 +1,3 @@
-// Replace your Sidebar.jsx with this
 import { NavLink } from 'react-router-dom';
 import { HomeIcon, ListIcon } from './Icons';
 

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getRoomSummary } from "../api/requests";
 import { getDashboardStats } from "../api/stats";
 import { socket } from "../socket";
-import DashboardStatCard from "./Layout/DashboardStatCard";
+import DashboardStatCard from "./layout/DashboardStatCard";
 import { BellAlertIcon, CheckCircleIcon, ClockIcon, ListIcon } from "./layout/Icons";
 
 function DashboardPage() {
